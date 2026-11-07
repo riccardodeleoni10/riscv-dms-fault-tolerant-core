@@ -66,7 +66,7 @@ Historical Program Counters (`EXE_PC_Tx`, `MEM_PC_Tx`, `WB_PC_Tx`) propagate alo
 Priority Hierarchy:  fault_on_PC (Hard Reset)  >  fault_on_WB  >  fault_on_MEM  >  fault_on_EXE
 ```
 
-![WB Commit-Wall Roll-Back Timing](docs/images/wb_rollback_timing.png)
+![WB Commit-Wall Roll-Back Timing](/images/WB_RollBack.png)
 
 ---
 
