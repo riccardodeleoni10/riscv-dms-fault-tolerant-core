@@ -102,7 +102,7 @@ To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\tex
 ![FIR Filtering Results](images/Fir_theoretical_output.png)
 >*Input Signal and thoretical Ouput*
 ---
-![LP Results](images/FIR_LP_output.png)
+![LP Results](images/Fir_LP_output.png)
 >*Low Pass Theoretical output and Computed output *
 ### Benchmark 2: Hardware-in-the-Loop (HIL) PID Controller & Fault Injection (RMT)
 To validate SEU resilience under closed-loop real-time constraints, the RMT core executes a discrete-time **PID Controller** (`pid.txt` / `pid_prog.txt`) regulating the angular velocity of a simulated DC motor:
