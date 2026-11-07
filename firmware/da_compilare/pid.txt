@@ -1,0 +1,94 @@
+# ====================================================================
+# RMT - PID CONTROLLER (P+I+D, Anti-Windup BLT)
+# ====================================================================
+.text
+
+# --- SETUP INDIRIZZI ---
+addi x9, x0, 2
+slli x9, x9, 12       # x9 = 8192 (Motore/Sensore)
+
+# --- TUNING DEL PID (Q20.12) ---
+# Kp = 15.5 (Reale: 63488)
+addi x10, x0, 31
+slli x10, x10, 11     
+
+# Ki = 0.045 (Reale: 185)
+addi x11, x0, 185      
+
+# Kd = 89.0 (Reale: 364544) 
+addi x12, x0, 89
+slli x12, x12, 12     
+
+addi x13, x0, 1000    # Setpoint = 1000
+
+# --- SETUP LIMITI ANTI-WINDUP (Per Ki = 185) ---
+addi x22, x0, 173
+slli x22, x22, 12     # MAX_INT (in x22)
+sub  x23, x0, x22     # MIN_INT (in x23)
+
+# --- INIZIALIZZAZIONE VARIABILI ---
+add  x14, x0, x0      # Int = 0 
+add  x15, x0, x0      # Errore Precedente = 0 (Per il Derivativo)
+
+# ====================================================================
+# MAIN LOOP PID
+# ====================================================================
+Loop_PID:
+    # 1. LETTURA SENSORE 
+    lw x28, 0(x9)         
+    addi x0, x0, 0        # NOP Load-Use
+    
+    sub x16, x13, x28     # E = Setpoint - Sensore
+
+    # 2. TERMINE PROPORZIONALE (P)
+    mul x17, x10, x16     # P = Kp * E
+
+    # 3. TERMINE INTEGRALE (I) CON ANTI-WINDUP
+    add x14, x14, x16     # Int = Int + E
+    
+    # --- CONTROLLO ANTI-WINDUP TRAMITE BLT ---
+    
+    # A) Controllo MIN: Se Int < MIN_INT, satura al minimo
+    blt x14, x23, Clamp_Min   
+    addi x0, x0, 0        # NOP Branch penalty
+    addi x0, x0, 0        # NOP Branch penalty
+    
+    # B) Controllo MAX: Se MAX_INT < Int, satura al massimo
+    blt x22, x14, Clamp_Max   
+    addi x0, x0, 0        # NOP Branch penalty
+    addi x0, x0, 0        # NOP Branch penalty
+    
+    # C) Nessun limite violato: vai dritto al calcolo
+    beq x0, x0, Calc_I    
+    addi x0, x0, 0        # NOP Branch penalty
+    addi x0, x0, 0        # NOP Branch penalty
+
+Clamp_Min:
+    add x14, x23, x0      # Satura a MIN
+    beq x0, x0, Calc_I    # Salta al calcolo
+    addi x0, x0, 0        # NOP Branch penalty
+    addi x0, x0, 0        # NOP Branch penalty
+
+Clamp_Max:
+    add x14, x22, x0      # Satura a MAX
+
+Calc_I:
+    mul x18, x11, x14     # I = Ki * Int
+
+    # 4. TERMINE DERIVATIVO (D)
+    sub x19, x16, x15     # Delta_E = E - Prev_E
+    mul x20, x12, x19     # D = Kd * Delta_E
+    add x15, x0, x16      # Salva l'Errore corrente (Prev_E = E)
+
+    # 5. SOMMA E SHIFT FIXED-POINT (P + I + D)
+    add x21, x17, x18     # Accumula P + I
+    add x21, x21, x20     # Accumula (P + I) + D
+    srai x21, x21, 12     # Riporta a intero (divisione per 4096)
+
+    # 6. SCRITTURA COMANDO MOTORE 
+    sw x21, 4(x9)         
+    
+    # 7. RIPETIZIONE LOOP
+    beq x0, x0, Loop_PID
+    addi x0, x0, 0        # NOP Branch penalty
+    addi x0, x0, 0        # NOP Branch penalty

@@ -1,0 +1,125 @@
+# ====================================================================
+# SMT THREAD 1 - FILTRO FIR PASSA-ALTO (15 Taps / Ordine 14)
+# Regole: 1 NOP Load-Use (mascherata a coppie), 2 NOP Branch Penalty
+# ====================================================================
+
+.text
+
+# --------------------------------------------------------------------
+# FASE 1: PRE-LOAD DEI COEFFICIENTI (Nei registri x10-x24)
+# --------------------------------------------------------------------
+addi x5, x0, 800     # Base address coefficienti HP (Byte 800)
+lw x10, 0(x5)        # h[0]
+lw x11, 4(x5)        # h[1]
+lw x12, 8(x5)        # h[2]
+lw x13, 12(x5)       # h[3]
+lw x14, 16(x5)       # h[4]
+lw x15, 20(x5)       # h[5]
+lw x16, 24(x5)       # h[6]
+lw x17, 28(x5)       # h[7]
+lw x18, 32(x5)       # h[8]
+lw x19, 36(x5)       # h[9]
+lw x20, 40(x5)       # h[10]
+lw x21, 44(x5)       # h[11]
+lw x22, 48(x5)       # h[12]
+lw x23, 52(x5)       # h[13]
+lw x24, 56(x5)       # h[14]
+
+# --------------------------------------------------------------------
+# FASE 2: SETUP PUNTATORI
+# --------------------------------------------------------------------
+addi x9, x0, 56      # Puntatore lettura x[n] (Condiviso)
+addi x27, x0, 1600   # Puntatore scrittura y[n] (Byte 1600)
+addi x6, x0, 400     # Limite audio (100 campioni = Byte 400)
+
+# --------------------------------------------------------------------
+# FASE 3: MAIN LOOP (Elaborazione di un campione)
+# --------------------------------------------------------------------
+Loop_Audio:
+add x8, x0, x0       # Azzera accumulatore MAC (x8)
+
+# --- Tap 0 e 1 ---
+lw x28, 0(x9)        # Legge x[n]
+lw x30, -4(x9)       # Legge x[n-1] (AGISCE DA NOP PER x28!)
+mul x29, x28, x10    # x28 pronto! Moltiplica per h[0]
+add x8, x8, x29      # Accumula
+mul x25, x30, x11    # x30 pronto! Moltiplica per h[1] (USATO x25)
+add x8, x8, x25      # Accumula
+
+# --- Tap 2 e 3 ---
+lw x28, -8(x9)       
+lw x30, -12(x9)      
+mul x29, x28, x12    
+add x8, x8, x29      
+mul x25, x30, x13    
+add x8, x8, x25      
+
+# --- Tap 4 e 5 ---
+lw x28, -16(x9)      
+lw x30, -20(x9)      
+mul x29, x28, x14    
+add x8, x8, x29      
+mul x25, x30, x15    
+add x8, x8, x25      
+
+# --- Tap 6 e 7 ---
+lw x28, -24(x9)      
+lw x30, -28(x9)      
+mul x29, x28, x16    
+add x8, x8, x29      
+mul x25, x30, x17    
+add x8, x8, x25      
+
+# --- Tap 8 e 9 ---
+lw x28, -32(x9)      
+lw x30, -36(x9)      
+mul x29, x28, x18    
+add x8, x8, x29      
+mul x25, x30, x19    
+add x8, x8, x25      
+
+# --- Tap 10 e 11 ---
+lw x28, -40(x9)      
+lw x30, -44(x9)      
+mul x29, x28, x20    
+add x8, x8, x29      
+mul x25, x30, x21    
+add x8, x8, x25      
+
+# --- Tap 12 e 13 ---
+lw x28, -48(x9)      
+lw x30, -52(x9)      
+mul x29, x28, x22    
+add x8, x8, x29      
+mul x25, x30, x23    
+add x8, x8, x25      
+
+# --- Tap 14 (L'ultimo dispari) ---
+lw x28, -56(x9)      # Legge x[n-14]
+addi x0, x0, 0       # ---> NOP ESPLICITA! (Serve ad aspettare x28) <---
+mul x29, x28, x24    
+add x8, x8, x29      
+
+# --------------------------------------------------------------------
+# FASE 4: NORMALIZZAZIONE, SALVATAGGIO E BRANCH
+# --------------------------------------------------------------------
+srai x8, x8, 15      # Riporta in scala 16-bit (divisione Q15)
+sw x8, 0(x27)        # Salva in RAM
+
+addi x9, x9, 4       # Avanza puntatore lettura
+addi x27, x27, 4     # Avanza puntatore scrittura
+
+# USO DELLA BLT DIRETTA
+blt x9, x6, Loop_Audio # Salta in cima se x9 < x6
+addi x0, x0, 0       # ---> 1a NOP PER IL SALTO <---
+addi x0, x0, 0       # ---> 2a NOP PER IL SALTO <---
+
+# --------------------------------------------------------------------
+# FASE 5: TERMINAZIONE (Scrittura x31)
+# --------------------------------------------------------------------
+addi x31, x0, 99     # Segnale di completamento per il Testbench
+
+Halt:
+beq x0, x0, Halt     # Loop infinito di sicurezza
+addi x0, x0, 0       # ---> 1a NOP PER IL SALTO <---
+addi x0, x0, 0       # ---> 2a NOP PER IL SALTO <---

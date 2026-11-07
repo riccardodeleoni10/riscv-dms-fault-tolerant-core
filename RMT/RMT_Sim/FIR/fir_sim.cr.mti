@@ -1,0 +1,84 @@
+/home/riccardo/ASV/MT_CPU/2Deliver/RMT/RMT_Sim/FIU.sv {1 {vlog -work work -vopt -sv -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/RMT_Sim/FIU.sv
+QuestaSim-64 vlog 2021.2_1 Compiler 2021.05 May 15 2021
+-- Compiling module fault_injection_unit
+
+Top level modules:
+	fault_injection_unit
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/RMT_Sim/FIR/tb_fault.sv {1 {vlog -work work -vopt -sv -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/RMT_Sim/FIR/tb_fault.sv
+QuestaSim-64 vlog 2021.2_1 Compiler 2021.05 May 15 2021
+-- Compiling module tb_core_top
+
+Top level modules:
+	tb_core_top
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/rom.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/rom.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Compiling entity DualPort_Instruction_ROM
+-- Compiling architecture Behavioral of DualPort_Instruction_ROM
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/alu.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/alu.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity ALU_Unit
+-- Compiling architecture Combinatoria of ALU_Unit
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/core_top.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/core_top.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity Core_top
+-- Compiling architecture Strutturale of Core_top
+-- Loading entity Core_SMT
+-- Loading package std_logic_textio
+-- Loading entity DualPort_Instruction_ROM
+-- Loading entity DualPort_Data_RAM
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/core2.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/core2.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity Core_SMT
+-- Compiling architecture Strutturale of Core_SMT
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/register_file.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/register_file.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity Register_File
+-- Compiling architecture Behavioral of register_file
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/ram.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/ram.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Compiling entity DualPort_Data_RAM
+-- Compiling architecture Behavioral of DualPort_Data_RAM
+
+} {} {}} /home/riccardo/ASV/MT_CPU/2Deliver/RMT/fault_checker.vhd {1 {vcom -work work -2008 -explicit -vopt -stats=none /home/riccardo/ASV/MT_CPU/2Deliver/RMT/fault_checker.vhd
+QuestaSim-64 vcom 2021.2_1 Compiler 2021.05 May 15 2021
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling entity fault_checker
+-- Compiling architecture Combinatoria of fault_checker
+
+} {} {}}
