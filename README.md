@@ -81,7 +81,7 @@ The **DMS ("Why not both?")** microarchitecture (`DMS/core2.vhd`) unifies the th
   4. `RF_T1` writes are disabled to preserve `T1`'s hibernated context; a multiplexer broadcasts `RF_T0` read operands to both execution lanes.
 - **Returning to SMT (`ft_mode`: `1` $\rightarrow$ `0`):** `T0` continues uninterrupted while `T1` restores its saved PC and seamlessly resumes its suspended workload from the exact instruction where it left off.
 
-![DMS Transition Timing](docs/images/dms_timing.png)
+![DMS Transition Timing](images/SMT2RMT.png)
 
 ---
 
