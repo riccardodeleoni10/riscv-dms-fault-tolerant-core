@@ -105,7 +105,7 @@ To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\tex
 ![LP Results](images/Fir_LP_output.png)
 > *Low Pass Theoretical output and Computed output*
 ---
-![HP Results](images/FIr_HP_output.png)
+![HP Results](images/Fir_HP_output.png)
 > *High Pass Theoretical output and Computed output*
 
 ### Benchmark 2: Hardware-in-the-Loop (HIL) PID Controller & Fault Injection (RMT)
@@ -124,7 +124,7 @@ $$u[n] = K_p e[n] + K_i \sum_{k=0}^{n} e[k] + K_d (e[n] - e[n-1])$$
 ---
 ### Benchmark 3: Switching mode from SMT to RMT and SMT again
 To validate the flexibility of the core to dinamically switch between the two modes, the core executes at the beginning of the test the **Low-Pass FIR filter** in **Thread 0**, and the **High-Pass FIR filter** in **Thread 1**. Once the external signal `ft_mode` is asserted , Thread 1 saves PC_1, and allineate Its program counter to Thread 0. When `ft_mode` turned LOW, Thread 1 retrives his past state (Program counter), and finished his firmware
-![Dinamcally Mode Switching](images/SMT2RMT.png)
+![Dinamcally Mode Switching](images/DMS_output.png)
 > *It is very clear from the output when Thread 1 stopped its firmware to syncronize with Thread0, and when it start it again*
 ## 5. FPGA Implementation Results (ZCU208)
 
