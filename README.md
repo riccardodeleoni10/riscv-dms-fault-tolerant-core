@@ -48,7 +48,7 @@ The scalar core is expanded into a spatially partitioned dual-thread processor w
 
 In **RMT mode**, hardware parallelism is traded for **Fault Tolerance**. `T0` and `T1` execute identical firmware in strict lock-step over isolated datapaths (`RMT/core2.vhd`), converging onto a centralized **Fault Checker (`RMT/fault_checker.vhd`)** and a shared **Single-Port Data RAM**.
 
-![RMT Core Architecture](docs/images/rmt_architecture.png)
+![RMT Core Architecture](images/RMT_core.png)
 
 ### Distributed Commit-Walls
 Comparators are placed at every architectural state modification boundary (*Commit-Walls*):
