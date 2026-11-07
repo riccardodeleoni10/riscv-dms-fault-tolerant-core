@@ -40,7 +40,7 @@ The scalar core is expanded into a spatially partitioned dual-thread processor w
 - **Duplicated Execution Resources:** Dual Instruction Decoders in `ID`, dual ALUs and independent Branch Evaluators in `EX`, and dual Hardware Multipliers in `MEM`.
 - **Dual-Port Memory Subsystem:** Parameterizable `DualPort_Instruction_ROM` (`rom.vhd`, configurable via `DUAL_PROGRAM_MODE` and `START_INDEX_T1`) and shared `DualPort_Data_RAM` (`ram.vhd`) enabling simultaneous non-blocking instruction fetches and data accesses.
 
-![SMT Core Architecture](/images/SMT_core.png)
+![SMT Core Architecture](images/SMT_core.png)
 
 ---
 
@@ -66,8 +66,9 @@ Historical Program Counters (`EXE_PC_Tx`, `MEM_PC_Tx`, `WB_PC_Tx`) propagate alo
 Priority Hierarchy:  fault_on_PC (Hard Reset)  >  fault_on_WB  >  fault_on_MEM  >  fault_on_EXE
 ```
 
-![WB Commit-Wall Roll-Back Timing](/images/WB_RollBack.png)
-> *Program Counter Roll-back procedure*
+![WB Commit-Wall Roll-Back Timing](images/WB_RollBack.png)
+> *Program Counter Roll-back procedure upon fault detection in the Write-Back stage.*
+
 ---
 
 ## 3. Dynamic Mode Switching (DMS Architecture)
@@ -82,12 +83,13 @@ The **DMS ("Why not both?")** microarchitecture (`DMS/core2.vhd`) unifies the th
 - **Returning to SMT (`ft_mode`: `1` $\rightarrow$ `0`):** `T0` continues uninterrupted while `T1` restores its saved PC and seamlessly resumes its suspended workload from the exact instruction where it left off.
 
 ![DMS Transition Timing](images/SMT2RMT.png)
-> *At the riseing edge of the fautl detection signal, P0 and P1 are syncronized*
+> *At the rising edge of the fault-tolerance mode signal (`ft_mode`), `PC_T0` and `PC_T1` are synchronized.*
+
 ---
 
 ## 4. Verification & Benchmarks (DSP & HIL Control)
 
-### Benchmark 1: Dual Parallel 15-Tap FIR Filtering 
+### Benchmark 1: Dual Parallel 15-Tap FIR Filtering
 To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\text{ Hz}$ tone sampled at $f_s = 800\text{ Hz}$) is pre-loaded into Data RAM (`data_init.txt` in 16-bit **Q15 fixed-point** format):
 - **Thread 0 (`0x000`):** Executes a 14th-order (15-tap) **Low-Pass FIR filter** (`LP.txt` / `lp.txt`, $f_c = 50\text{ Hz}$, coefficients at `0x190`).
 - **Thread 1 (`0x400`):** Executes a 15-tap **High-Pass FIR filter** (`HP.txt` / `hp.txt`, $f_c = 50\text{ Hz}$, coefficients at `0x320`).
@@ -100,13 +102,15 @@ To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\tex
 | `200 - 214` | `0x320 - 0x358` | 15 Words | High-Pass FIR coefficients (`T1`) |
 
 ![FIR Filtering Results](images/Fir_theoretical_output.png)
-> *Input Signal and theoretical Ouput*
----
+> *Input signal and theoretical FIR filter responses.*
+
 ![LP Results](images/Fir_LP_output.png)
-> *Low Pass Theoretical output and Computed output*
----
+> *Low-Pass Filter (`T0`): Theoretical MATLAB output vs. Hardware computed output.*
+
 ![HP Results](images/Fir_HP_output.png)
-> *High Pass Theoretical output and Computed output*
+> *High-Pass Filter (`T1`): Theoretical MATLAB output vs. Hardware computed output.*
+
+---
 
 ### Benchmark 2: Hardware-in-the-Loop (HIL) PID Controller & Fault Injection (RMT)
 To validate SEU resilience under closed-loop real-time constraints, the RMT core executes a discrete-time **PID Controller** (`pid.txt` / `pid_prog.txt`) regulating the angular velocity of a simulated DC motor:
@@ -118,14 +122,21 @@ $$u[n] = K_p e[n] + K_i \sum_{k=0}^{n} e[k] + K_d (e[n] - e[n-1])$$
 - **Fault Injection Unit (`FIU.sv`):** Parameterizable module (`WIDTH`, `START_CYCLE`, `END_CYCLE`, `fault_mask`) that corrupts internal RTL nets via bitwise XOR and SystemVerilog `force`/`release`. Verified against bit-flips in both `WB` data and `MEM` address buses (e.g., corrupting `alu_result_T0` during an MMIO `lw` at cycle 391), confirming 1-cycle detection, memory protection, and roll-back recovery with zero perturbation to the motor step response.
 
 ![HIL Simulation Hierarchy](images/HIL.png)
-> *HIL Hierarchy*
+> *Hardware-in-the-Loop (HIL) simulation hierarchy.*
+
 ![PID Step Response Under Fault Injection](images/PID_output.png)
-> *Even if a fault was injected, the DMS core manage it perfectly, PID responde is clean*
+> *Even under active SEU fault injection, the core recovers transparently, maintaining a clean, unperturbed PID step response.*
+
 ---
-### Benchmark 3: Switching mode from SMT to RMT and SMT again
-To validate the flexibility of the core to dinamically switch between the two modes, the core executes at the beginning of the test the **Low-Pass FIR filter** in **Thread 0**, and the **High-Pass FIR filter** in **Thread 1**. Once the external signal `ft_mode` is asserted , Thread 1 saves PC_1, and allineate Its program counter to Thread 0. When `ft_mode` turned LOW, Thread 1 retrives his past state (Program counter), and finished his firmware
-![Dinamcally Mode Switching](images/DMS_output.png)
-> *It is very clear from the output when Thread 1 stopped its firmware to syncronize with Thread0, and when it start it again*
+
+### Benchmark 3: Dynamic Mode Switching (`SMT` $\rightarrow$ `RMT` $\rightarrow$ `SMT`)
+To validate the core's ability to dynamically switch operating modes at runtime, the processor starts in **SMT mode**, executing the **Low-Pass FIR filter** on **Thread 0** and the **High-Pass FIR filter** on **Thread 1**. Once the external signal `ft_mode` is asserted (`HIGH`), Thread 1 saves its current `PC_T1` in a shadow register and aligns its Program Counter with Thread 0 to enter **RMT lock-step mode**. When `ft_mode` returns `LOW`, Thread 1 retrieves its saved architectural state (Program Counter) and seamlessly completes its High-Pass FIR execution.
+
+![Dynamic Mode Switching](images/DMS_output.png)
+> *The output plot clearly highlights the window where Thread 1 pauses its independent FIR workload to synchronize with Thread 0 in RMT lock-step mode, before resuming execution once `ft_mode` is deasserted.*
+
+---
+
 ## 5. FPGA Implementation Results (ZCU208)
 
 All three architectures were synthesized, placed, and routed on an **AMD/Xilinx Zynq UltraScale+ RFSoC ZCU208** using **AMD Vivado**. Power metrics were extracted via Post-Implementation Timing Simulation switching activity at $100\text{ MHz}$.
@@ -243,5 +254,5 @@ fault_injection_unit #(
 
 ## 👤 Author & Academic Context
 - **Author:** Riccardo De Leoni
-- **Course:** *VLSI Architectures and Systems for DSP* 
+- **Course:** *VLSI Architectures and Systems for DSP*
 - **Institution:** University of Rome "Tor Vergata" — M.Sc. in Electronic Engineering (A.Y. 2025/2026)
