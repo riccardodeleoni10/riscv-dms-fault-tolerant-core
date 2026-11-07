@@ -87,7 +87,7 @@ The **DMS ("Why not both?")** microarchitecture (`DMS/core2.vhd`) unifies the th
 
 ## 4. Verification & Benchmarks (DSP & HIL Control)
 
-### Benchmark 1: Dual Parallel 15-Tap FIR Filtering (RMT & DMS)
+### Benchmark 1: Dual Parallel 15-Tap FIR Filtering 
 To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\text{ Hz}$ tone sampled at $f_s = 800\text{ Hz}$) is pre-loaded into Data RAM (`data_init.txt` in 16-bit **Q15 fixed-point** format):
 - **Thread 0 (`0x000`):** Executes a 14th-order (15-tap) **Low-Pass FIR filter** (`LP.txt` / `lp.txt`, $f_c = 50\text{ Hz}$, coefficients at `0x190`).
 - **Thread 1 (`0x400`):** Executes a 15-tap **High-Pass FIR filter** (`HP.txt` / `hp.txt`, $f_c = 50\text{ Hz}$, coefficients at `0x320`).
@@ -103,10 +103,10 @@ To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\tex
 > *Input Signal and theoretical Ouput*
 ---
 ![LP Results](images/Fir_LP_output.png)
-> *Low Pass Theoretical output and Computed output *
+> *Low Pass Theoretical output and Computed output*
 ---
 ![HP Results](images/FIr_HP_output.png)
-> *High Pass Theoretical output and Computed output *
+> *High Pass Theoretical output and Computed output*
 
 ### Benchmark 2: Hardware-in-the-Loop (HIL) PID Controller & Fault Injection (RMT)
 To validate SEU resilience under closed-loop real-time constraints, the RMT core executes a discrete-time **PID Controller** (`pid.txt` / `pid_prog.txt`) regulating the angular velocity of a simulated DC motor:
@@ -117,11 +117,15 @@ $$u[n] = K_p e[n] + K_i \sum_{k=0}^{n} e[k] + K_d (e[n] - e[n-1])$$
 - **Event-Driven HIL Plant Model (`tb_pid_fault.sv`):** Synchronized on `negedge clk`, the SystemVerilog testbench intercepts MMIO actuator writes at address `8196` (`0x2004`), updates the discrete Euler motor physics ($\omega[n] = \omega[n-1] - \omega[n-1]/1024 + u[n-1]$), and injects Hall-sensor speed feedback at address `8192` (`0x2000`) via SystemVerilog `force`/`release`.
 - **Fault Injection Unit (`FIU.sv`):** Parameterizable module (`WIDTH`, `START_CYCLE`, `END_CYCLE`, `fault_mask`) that corrupts internal RTL nets via bitwise XOR and SystemVerilog `force`/`release`. Verified against bit-flips in both `WB` data and `MEM` address buses (e.g., corrupting `alu_result_T0` during an MMIO `lw` at cycle 391), confirming 1-cycle detection, memory protection, and roll-back recovery with zero perturbation to the motor step response.
 
-![HIL Simulation Hierarchy](docs/images/hil_hierarchy.png)
-![PID Step Response Under Fault Injection](docs/images/pid_response.png)
-
+![HIL Simulation Hierarchy](images/HIL.png)
+> *HIL Hierarchy*
+![PID Step Response Under Fault Injection](images/PID_output.png)
+> *Even if a fault was injected, the DMS core manage it perfectly, PID responde is clean*
 ---
-
+### Benchmark 3: Switching mode from SMT to RMT and SMT again
+To validate the flexibility of the core to dinamically switch between the two modes, the core executes at the beginning of the test the **Low-Pass FIR filter** in **Thread 0**, and the **High-Pass FIR filter** in **Thread 1**. Once the external signal `ft_mode` is asserted , Thread 1 saves PC_1, and allineate Its program counter to Thread 0. When `ft_mode` turned LOW, Thread 1 retrives his past state (Program counter), and finished his firmware
+![Dinamcally Mode Switching](images/SMT2RMT.png)
+> *It is very clear from the output when Thread 1 stopped its firmware to syncronize with Thread0, and when it start it again*
 ## 5. FPGA Implementation Results (ZCU208)
 
 All three architectures were synthesized, placed, and routed on an **AMD/Xilinx Zynq UltraScale+ RFSoC ZCU208** using **AMD Vivado**. Power metrics were extracted via Post-Implementation Timing Simulation switching activity at $100\text{ MHz}$.
