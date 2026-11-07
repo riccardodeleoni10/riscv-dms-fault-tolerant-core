@@ -67,7 +67,7 @@ Priority Hierarchy:  fault_on_PC (Hard Reset)  >  fault_on_WB  >  fault_on_MEM  
 ```
 
 ![WB Commit-Wall Roll-Back Timing](/images/WB_RollBack.png)
-
+> *Program Counter Roll-back procedure*
 ---
 
 ## 3. Dynamic Mode Switching (DMS Architecture)
@@ -82,7 +82,7 @@ The **DMS ("Why not both?")** microarchitecture (`DMS/core2.vhd`) unifies the th
 - **Returning to SMT (`ft_mode`: `1` $\rightarrow$ `0`):** `T0` continues uninterrupted while `T1` restores its saved PC and seamlessly resumes its suspended workload from the exact instruction where it left off.
 
 ![DMS Transition Timing](images/SMT2RMT.png)
-
+> *At the riseing edge of the fautl detection signal, P0 and P1 are syncronized*
 ---
 
 ## 4. Verification & Benchmarks (DSP & HIL Control)
@@ -100,7 +100,7 @@ To validate DSP execution, a composite signal ($10\text{ Hz}$ carrier + $200\tex
 | `200 - 214` | `0x320 - 0x358` | 15 Words | High-Pass FIR coefficients (`T1`) |
 
 ![DMS FIR Filtering Results](images/Fir_theoretical_output.png)
-
+>*Input Signal and thoretical Ouput*
 ### Benchmark 2: Hardware-in-the-Loop (HIL) PID Controller & Fault Injection (RMT)
 To validate SEU resilience under closed-loop real-time constraints, the RMT core executes a discrete-time **PID Controller** (`pid.txt` / `pid_prog.txt`) regulating the angular velocity of a simulated DC motor:
 
