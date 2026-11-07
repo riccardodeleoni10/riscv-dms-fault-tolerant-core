@@ -40,7 +40,7 @@ The scalar core is expanded into a spatially partitioned dual-thread processor w
 - **Duplicated Execution Resources:** Dual Instruction Decoders in `ID`, dual ALUs and independent Branch Evaluators in `EX`, and dual Hardware Multipliers in `MEM`.
 - **Dual-Port Memory Subsystem:** Parameterizable `DualPort_Instruction_ROM` (`rom.vhd`, configurable via `DUAL_PROGRAM_MODE` and `START_INDEX_T1`) and shared `DualPort_Data_RAM` (`ram.vhd`) enabling simultaneous non-blocking instruction fetches and data accesses.
 
-![SMT Core Architecture](docs/images/smt_architecture.png)
+![SMT Core Architecture](/images/SMT_core.png)
 
 ---
 
