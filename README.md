@@ -232,5 +232,5 @@ fault_injection_unit #(
 
 ## 👤 Author & Academic Context
 - **Author:** Riccardo De Leoni
-- **Course:** *VLSI Architectures and Systems for DSP* (Prof. Marcello Barbirotta)
+- **Course:** *VLSI Architectures and Systems for DSP* 
 - **Institution:** University of Rome "Tor Vergata" — M.Sc. in Electronic Engineering (A.Y. 2025/2026)
